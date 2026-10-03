@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FURNITURE / MARKET MAP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<header class="top">
+  <div class="mark"><span>Furniture</span><i>/</i><em>a market map</em></div>
+  <p class="lede">Thirty pieces, one floor. Re-sort the room by what it's made of, what it costs, and what color it leaves in your eye.</p>
+  <div class="meta">Vol. 01 &mdash; 30 objects &mdash; renders CC0</div>
+</header>
+<nav class="controls" aria-label="Sort">
+  <span class="lbl">View by</span>
+  <button data-mode="cat" class="on">Category</button>
+  <button data-mode="color">Color</button>
+  <button data-mode="tier">Price tier</button>
+</nav>
+<main id="map" class="map"></main>
+<div id="tip" class="tip" role="tooltip"></div>
+<dialog id="detail" class="detail">
+  <button class="x" aria-label="Close">&times;</button>
+  <div class="d-img"><img alt=""></div>
+  <div class="d-body">
+    <div class="d-cat"></div><h2></h2>
+    <dl><dt>Price tier</dt><dd class="d-tier"></dd><dt>Dominant tone</dt><dd class="d-tone"></dd><dt>Render</dt><dd><a class="d-src" target="_blank" rel="noopener">Poly Haven (CC0)</a></dd></dl>
+    <p class="note">Names are generic and price tiers are illustrative only, not real product prices.</p>
+  </div>
+</dialog>
+<footer class="foot">3D renders from <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a>, licensed CC0. Product names generic; price tiers illustrative ($ entry &rarr; $$$$ luxury). A study by Emordes.</footer>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
