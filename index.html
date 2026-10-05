@@ -11,6 +11,11 @@
   <p class="lede">Thirty pieces, one floor. Re-sort the room by what it's made of, what it costs, and what color it leaves in your eye.</p>
   <div class="meta">Vol. 01 &mdash; 30 objects &mdash; renders CC0</div>
 </header>
+<nav class="views" aria-label="Section">
+  <button data-view="map" class="on">Market map</button>
+  <button data-view="plans">Floor plans</button>
+  <button data-view="fixtures">Fixture mapping</button>
+</nav>
 <nav class="controls" aria-label="Sort">
   <span class="lbl">View by</span>
   <button data-mode="cat" class="on">Category</button>
@@ -18,6 +23,19 @@
   <button data-mode="tier">Price tier</button>
 </nav>
 <main id="map" class="map"></main>
+<section id="plans" class="plans" hidden>
+  <div class="p-bar">
+    <span class="lbl">Layout</span>
+    <span class="p-tabs"></span>
+    <span class="p-act"><button data-a="reset">Reset</button><button data-a="png">PNG</button><button data-a="print">Print</button></span>
+  </div>
+  <div class="p-wrap">
+    <figure class="p-fig"><div class="p-head"><h3 class="p-title"></h3><small class="p-dim"></small></div><div class="p-svg"></div>
+      <figcaption>Drag footprints to re-plan &middot; tap to open &middot; snaps to 6&Prime; &middot; saved on this device. Illustrative layout, not a real store.</figcaption></figure>
+    <aside class="p-side"><h3>Fixture schedule</h3><div class="p-legend"></div>
+      <div class="p-tablewrap"><table class="p-table"><thead><tr><th>ID</th><th>Product</th><th>Zone</th><th>W&times;D</th></tr></thead><tbody></tbody></table></div></aside>
+  </div>
+</section>
 <div id="tip" class="tip" role="tooltip"></div>
 <dialog id="detail" class="detail">
   <button class="x" aria-label="Close">&times;</button>
@@ -29,5 +47,5 @@
   </div>
 </dialog>
 <footer class="foot">3D renders from <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a>, licensed CC0. Product names generic; price tiers illustrative ($ entry &rarr; $$$$ luxury). A study by Emordes.</footer>
-<script src="data.js"></script><script src="app.js"></script>
+<script src="data.js"></script><script src="app.js"></script><script src="plans.js"></script>
 </body></html>
