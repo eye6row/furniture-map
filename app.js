@@ -28,5 +28,5 @@ function open(it){dlg.querySelector('img').src=it.img;dlg.querySelector('img').a
  dlg.querySelector('.d-src').href=it.src;tip.classList.remove('show');dlg.showModal()}
 dlg.querySelector('.x').onclick=()=>dlg.close();dlg.onclick=e=>{if(e.target===dlg)dlg.close()};
 document.querySelectorAll('.controls button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.controls button').forEach(x=>x.classList.toggle('on',x===b));render(b.dataset.mode,true)});
-render('cat',false);
+render('cat',false);window.FM={open,tone,T,TN};
 })();
