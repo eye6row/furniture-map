@@ -86,3 +86,7 @@ figcaption{color:var(--mute);font-size:10px;margin-top:8px;line-height:1.5}
 body.v-plans .controls,body.v-plans #map,body.v-fixtures .controls,body.v-fixtures #map{display:none}
 @media(max-width:760px){.views{gap:14px}.views button{font-size:18px}.p-wrap,.plans.fx .p-wrap{grid-template-columns:1fr}.p-act{margin-left:0}.p-tablewrap{max-height:none}}
 @media print{body{background:#fff}.top,.views,.controls,#map,.p-bar,.foot,figcaption{display:none!important}.plans{display:block!important;padding:0}.p-wrap{grid-template-columns:1fr!important}.p-svg svg{border:1px solid #000}.p-tablewrap{max-height:none;overflow:visible}.p-side{break-before:page}}
+.p-table td.nt{color:var(--mute);font-size:10.5px;line-height:1.4;min-width:150px}
+.plans:not(.fx) .p-table th:last-child,.plans:not(.fx) .p-table td.nt{display:none}
+@media print{.p-table th:last-child,.p-table td.nt{display:table-cell!important}}
+@media(max-width:760px){.plans .p-table th:last-child,.plans .p-table td.nt{display:table-cell}.p-tablewrap{overflow-x:auto}}
