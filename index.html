@@ -14,7 +14,7 @@
 <nav class="views" aria-label="Section">
   <button data-view="map" class="on">Market map</button>
   <button data-view="plans">Floor plans</button>
-  <button data-view="fixtures">Fixture mapping</button>
+  <button data-view="fixtures">Fixture mapping</button><button data-view="events">Event layout</button>
 </nav>
 <nav class="controls" aria-label="Sort">
   <span class="lbl">View by</span>
@@ -36,7 +36,7 @@
       <div class="p-tablewrap"><table class="p-table"><thead><tr><th>ID</th><th>Product</th><th>Zone</th><th>W&times;D</th><th>Adjacency / notes</th></tr></thead><tbody></tbody></table></div></aside>
   </div>
 </section>
-<div id="tip" class="tip" role="tooltip"></div>
+<section id="events" hidden></section><div id="tip" class="tip" role="tooltip"></div>
 <dialog id="detail" class="detail">
   <button class="x" aria-label="Close">&times;</button>
   <div class="d-img"><img alt=""></div>
@@ -47,5 +47,5 @@
   </div>
 </dialog>
 <footer class="foot">3D renders from <a href="https://polyhaven.com" target="_blank" rel="noopener">Poly Haven</a>, licensed CC0. Product names generic; price tiers illustrative ($ entry &rarr; $$$$ luxury). A study by Emordes.</footer>
-<script src="data.js"></script><script src="app.js"></script><script src="plans.js"></script>
+<script src="data.js"></script><script src="app.js"></script><script src="plans.js"></script><script src="events.js"></script>
 </body></html>

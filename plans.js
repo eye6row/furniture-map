@@ -118,7 +118,7 @@ sec.querySelector('[data-a=png]').onclick=()=>{
 // view switching
 document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{const v=b.dataset.view;
  document.querySelectorAll('.views button').forEach(x=>x.classList.toggle('on',x===b));
- document.body.className=v==='map'?'':'v-'+v;sec.hidden=v==='map';sec.classList.toggle('fx',v==='fixtures');
- if(v!=='map'&&!svg)draw();history.replaceState(null,'',v==='map'?location.pathname:'#'+v)});
+ document.body.className=v==='map'?'':'v-'+v;sec.hidden=v!=='plans'&&v!=='fixtures';sec.classList.toggle('fx',v==='fixtures');
+ if((v==='plans'||v==='fixtures')&&!svg)draw();history.replaceState(null,'',v==='map'?location.pathname:'#'+v)});
 const h=location.hash.slice(1);if(h==='plans'||h==='fixtures')document.querySelector(`.views [data-view=${h}]`).click();
 })();
