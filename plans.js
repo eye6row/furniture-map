@@ -34,14 +34,22 @@ const LAYOUTS=[
    ['GothicCabinet_01',34,140,90,'Bar cabinet; adjacency to dining'],['side_table_01',34,212,0,'Lamp + candles'],
    ['bar_chair_round_01',320,130,0,'Counter stool'],['bar_chair_round_01',320,170,0,'Counter stool'],['bar_chair_round_01',320,210,0,'Counter stool']]}
 ];
-const KEY='fm_plans_v2',NS='http://www.w3.org/2000/svg',SNAP=6;
-let store={};try{store=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
-let L=LAYOUTS[0],svg;
+const KEY='fm_plans_projects_v1',NS='http://www.w3.org/2000/svg',SNAP=6;
+const copy=o=>JSON.parse(JSON.stringify(o)),uid=()=>crypto.randomUUID();
+const fresh=t=>{const l=copy(t);l.id=uid();l.template=t.key;l.fx.forEach((f,n)=>{f[5]={id:'F-'+String(n+1).padStart(2,'0'),label:by[f[0]].name};f[6]=copy(DIM[f[0]]);});return l;};
+let db;try{db=JSON.parse(localStorage.getItem(KEY));if(!db.projects?.length)throw Error();}catch{
+ let old={};try{old=JSON.parse(localStorage.getItem('fm_plans_v2'))||{};}catch{}
+ const projects=LAYOUTS.filter((t,n)=>n===0||old[t.key]).map(t=>{const l=fresh(t);l.fx.forEach((f,n)=>{const v=old[t.key]?.[f[5].id];if(v){f[1]=v[0];f[2]=v[1];f[3]=v[2]??f[3];}});return l;});db={active:projects[0].id,projects};
+}
+let L=db.projects.find(l=>l.id===db.active)||db.projects[0],svg,selected=null;
 const sec=document.getElementById('plans'),tabs=sec.querySelector('.p-tabs'),tbody=sec.querySelector('tbody');
-const fid=n=>'F-'+String(n+1).padStart(2,'0');
-const pos=(n)=>{const s=(store[L.key]||{})[fid(n)];const f=L.fx[n];return s?{x:s[0],y:s[1],r:s[2]??f[3]}:{x:f[1],y:f[2],r:f[3]}};
-const ft=n=>{const f=L.fx[n],d=DIM[f[0]],p=pos(n),sw=Math.abs(p.r)%180===90;return{w:sw?d[1]:d[0],h:sw?d[0]:d[1]}};
+const status=document.createElement('p');status.className='e-status';status.setAttribute('role','status');sec.querySelector('.p-bar').after(status);
+const save=()=>{db.active=L.id;try{localStorage.setItem(KEY,JSON.stringify(db));status.textContent='Autosaved on this device. Double-click a project tab to rename.';}catch{status.textContent='Storage unavailable. Export before leaving.';}};
+const fid=n=>L.fx[n][5].id;
+const pos=n=>{const f=L.fx[n];return{x:f[1],y:f[2],r:f[3]};};
+const dim=n=>L.fx[n][6];
+const ft=n=>{const d=dim(n),p=pos(n),sw=Math.abs(p.r)%180===90;return{w:sw?d[1]:d[0],h:sw?d[0]:d[1]};};
+function fit(n){const f=L.fx[n],d=ft(n);f[1]=Math.max(d.w/2,Math.min(L.w-d.w/2,f[1]));f[2]=Math.max(d.h/2,Math.min(L.h-d.h/2,f[2]));}
 const zoneOf=n=>{const p=pos(n);const z=L.zones.find(z=>p.x>=z[2]&&p.x<=z[2]+z[4]&&p.y>=z[3]&&p.y<=z[3]+z[5]);return z?z[0]+' · '+z[1]:'Open floor'};
 const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e};
 const ftIn=v=>`${Math.floor(v/12)}′${v%12?(v%12)+'″':''}`;
@@ -64,7 +72,7 @@ function draw(){
  const st=el('text',{x:126,y:L.h+33,'font-size':8,fill:'#8a8178'},svg);st.textContent='10′  ·  1 square = 1′';
  const nt=el('text',{x:L.w+18,y:-12,'text-anchor':'middle','font-size':10,fill:'#1a1714'},svg);nt.textContent='N';
  el('path',{d:`M${L.w+18} -8l-4 14 4-3 4 3z`,fill:'#1a1714'},svg);
- L.fx.forEach((f,n)=>{const it=by[f[0]],d=DIM[f[0]],p=pos(n);
+ L.fx.forEach((f,n)=>{const it=by[f[0]],d=dim(n),p=pos(n);
   const g=el('g',{class:'fp',transform:`translate(${p.x} ${p.y})`,tabindex:0,'data-n':n},svg);
   const rg=el('g',{transform:`rotate(${p.r})`},g);
   el('rect',{class:'b',x:-d[0]/2,y:-d[1]/2,width:d[0],height:d[1],rx:d[2]?d[0]/2:1.5,fill:`rgb(${it.rgb})`,'fill-opacity':.18,stroke:'#1a1714','stroke-width':.9},rg);
@@ -83,9 +91,10 @@ function draw(){
  table()}
 function table(){
  tbody.innerHTML='';
- L.fx.forEach((f,n)=>{const it=by[f[0]],d=DIM[f[0]];const tr=document.createElement('tr');tr.dataset.n=n;
-  tr.innerHTML=`<td>${fid(n)}</td><td class="nm"><img src="${it.img}" alt="">${it.name}</td><td>${zoneOf(n)}</td><td>${d[0]}″×${d[1]}″</td><td class="nt">${f[4]||''}</td>`;
-  tr.onclick=()=>FM.open(it);tr.onmouseenter=()=>hl(n,1);tr.onmouseleave=()=>hl(n,0);tbody.appendChild(tr)})}
+ L.fx.forEach((f,n)=>{const it=by[f[0]],d=dim(n);const tr=document.createElement('tr');tr.dataset.n=n;
+  const values=[fid(n),f[5].label,zoneOf(n),d[0]+'″×'+d[1]+'″',f[4]||''];
+  values.forEach((v,k)=>{const td=document.createElement('td');td.textContent=v;if(k===1)td.className='nm';if(k===4)td.className='nt';tr.append(td);});
+  tr.onclick=()=>{selected=n;edit();};tr.onmouseenter=()=>hl(n,1);tr.onmouseleave=()=>hl(n,0);tbody.appendChild(tr)})}
 function hl(n,on){svg.querySelector(`.fp[data-n="${n}"]`)?.classList.toggle('hl',!!on);tbody.querySelector(`tr[data-n="${n}"]`)?.classList.toggle('hl',!!on)}
 function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
 function drag(g,n){let s=null;
@@ -93,17 +102,37 @@ function drag(g,n){let s=null;
  g.addEventListener('pointermove',e=>{if(!s)return;if(!s.moved&&Math.hypot(e.clientX-s.cx,e.clientY-s.cy)<5)return;s.moved=true;g.classList.add('drag');
   const q=pt(e),{w,h}=ft(n);let x=Math.round((q.x-s.dx)/SNAP)*SNAP,y=Math.round((q.y-s.dy)/SNAP)*SNAP;
   x=Math.max(w/2,Math.min(L.w-w/2,x));y=Math.max(h/2,Math.min(L.h-h/2,y));
-  (store[L.key]=store[L.key]||{})[fid(n)]=[x,y,pos(n).r];g.setAttribute('transform',`translate(${x} ${y})`)});
- const end=e=>{if(!s)return;g.classList.remove('drag');if(s.moved){save();const td=tbody.querySelector(`tr[data-n="${n}"] td:nth-child(3)`);if(td)td.textContent=zoneOf(n)}else FM.open(by[L.fx[n][0]]);s=null};
- g.addEventListener('pointerup',end);g.addEventListener('pointercancel',()=>{s=null;g.classList.remove('drag')});
- g.addEventListener('keydown',e=>{if(e.key==='Enter')FM.open(by[L.fx[n][0]])});
+  L.fx[n][1]=x;L.fx[n][2]=y;g.setAttribute('transform',`translate(${x} ${y})`)});
+ const end=e=>{if(!s)return;g.classList.remove('drag');if(s.moved){save();const td=tbody.querySelector(`tr[data-n="${n}"] td:nth-child(3)`);if(td)td.textContent=zoneOf(n)}else {selected=n;edit();}s=null};
+ g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
+ g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selected=n;edit();}});
  g.addEventListener('pointerenter',()=>hl(n,1));g.addEventListener('pointerleave',()=>hl(n,0))}
-LAYOUTS.forEach(l=>{const b=document.createElement('button');b.textContent=l.name;b.onclick=()=>{L=l;tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));draw()};tabs.appendChild(b)});
-tabs.firstChild.classList.add('on');
+function rename(){const name=prompt('Project name',L.name);if(name?.trim()){L.name=name.trim().slice(0,100);list();save();draw();}}
+function list(){tabs.replaceChildren();tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Saved projects');db.projects.forEach(l=>{const b=document.createElement('button');b.textContent=l.name;b.classList.toggle('on',l===L);b.setAttribute('role','tab');b.setAttribute('aria-selected',String(l===L));b.onclick=()=>{L=l;selected=null;list();save();draw();edit();};b.ondblclick=rename;tabs.append(b);});}
+const tools=document.createElement('div');tools.className='p-project-tools';
+const template=document.createElement('select');template.setAttribute('aria-label','New project template');LAYOUTS.forEach(t=>{const o=document.createElement('option');o.value=t.key;o.textContent=t.name;template.append(o);});tools.append(template);
+function action(label,fn){const b=document.createElement('button');b.textContent=label;b.onclick=fn;tools.append(b);}
+function activate(l){L=l;db.projects.push(l);selected=null;list();save();draw();edit();}
+action('New project',()=>activate(fresh(LAYOUTS.find(t=>t.key===template.value))));
+action('Duplicate',()=>{const l=copy(L);l.id=uid();l.name+=' / copy';activate(l);});action('Rename',rename);
+action('Delete project',()=>{if(!confirm('Delete '+L.name+'? This cannot be undone.'))return;db.projects=db.projects.filter(l=>l!==L);if(!db.projects.length)db.projects.push(fresh(LAYOUTS[0]));L=db.projects[0];selected=null;list();save();draw();edit();});
+sec.querySelector('.p-bar').after(tools);
+const inspector=document.createElement('div');inspector.className='p-editor';sec.querySelector('.p-side h3').after(inspector);
+const palette=document.createElement('select');palette.setAttribute('aria-label','Fixture palette');I.forEach(i=>{const o=document.createElement('option');o.value=i.id;o.textContent=i.name;palette.append(o);});
+const add=document.createElement('button');add.textContent='Add fixture';add.onclick=()=>{const k=palette.value;const used=new Set(L.fx.map(f=>f[5].id));let n=1;while(used.has('F-'+String(n).padStart(2,'0')))n++;L.fx.push([k,L.w/2,L.h/2,0,'',{id:'F-'+String(n).padStart(2,'0'),label:by[k].name},copy(DIM[k]||[24,24])]);selected=L.fx.length-1;fit(selected);save();draw();edit();};
+const pal=document.createElement('div');pal.className='p-palette';pal.append(palette,add);inspector.before(pal);
+function edit(){inspector.replaceChildren();const f=L.fx[selected];if(!f){inspector.textContent='Select a footprint or schedule row to edit.';return;}
+ const fields=[['Fixture ID',f[5].id,v=>f[5].id=v],['Label',f[5].label,v=>f[5].label=v],['Width / inches',f[6][0],v=>f[6][0]=Number(v)],['Depth / inches',f[6][1],v=>f[6][1]=Number(v)],['Notes',f[4],v=>f[4]=v]];
+ fields.forEach(([title,value,set],n)=>{const label=document.createElement('label');label.textContent=title;const input=document.createElement(n===4?'textarea':'input');input.value=value;if(n===2||n===3){input.type='number';input.min=1;input.max=Math.min(L.w,L.h);input.step=1;}else input.maxLength=n===4?1000:100;
+ input.onchange=()=>{if(!input.checkValidity())return;set(input.value);fit(selected);save();draw();};label.append(input);inspector.append(label);});
+ function btn(name,fn){const b=document.createElement('button');b.textContent=name;b.onclick=fn;inspector.append(b);}
+ btn('Rotate 90°',()=>{f[3]=(f[3]+90)%360;fit(selected);save();draw();edit();});btn('Product details',()=>FM.open(by[f[0]]));btn('Remove fixture',()=>{if(!confirm('Remove '+f[5].label+' from this project?'))return;L.fx.splice(selected,1);selected=null;save();draw();edit();});
+}
+list();edit();save();
 // legend
 const lg=sec.querySelector('.p-legend');
 lg.innerHTML=`<span><i style="background:rgba(181,72,42,.08);border:1px dashed #b5482a"></i>Zone</span><span><i style="background:rgba(120,110,100,.2)"></i>Footprint (tinted by finish)</span><span><i style="border-radius:50%"></i>Round</span><span><i style="background:rgba(138,129,120,.25);border:0"></i>Power aisle</span><span><i style="border:1px dashed #1a1714"></i>Entry / cash wrap</span><span style="color:#2f6f8f">⇢ Traffic flow</span><span style="color:#b5482a">◎ Focal · ⋯ sightline from door</span><span style="color:#b5482a">F-## fixture ID</span>`;
-sec.querySelector('[data-a=reset]').onclick=()=>{if(!confirm(`Reset ${L.name} to the default layout?`))return;delete store[L.key];save();draw()};
+sec.querySelector('[data-a=reset]').onclick=()=>{if(!confirm(`Reset ${L.name} to the default layout?`))return;const name=L.name,id=L.id,t=LAYOUTS.find(t=>t.key===L.template)||LAYOUTS[0];Object.assign(L,fresh(t),{name,id});selected=null;save();draw();edit()};
 sec.querySelector('[data-a=print]').onclick=()=>print();
 sec.querySelector('[data-a=png]').onclick=()=>{
  const vb=svg.viewBox.baseVal,sc=4,c=document.createElement('canvas');c.width=vb.width*sc;c.height=(vb.height+20)*sc;
@@ -111,7 +140,7 @@ sec.querySelector('[data-a=png]').onclick=()=>{
  const img=new Image(),url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'}));
  img.onload=()=>{const x=c.getContext('2d');x.fillStyle='#f5f1ea';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0);
   x.fillStyle='#8a8178';x.font=`${8*sc}px monospace`;x.fillText(`${L.name.toUpperCase()} — FIXTURE PLAN (ILLUSTRATIVE)`,10*sc,(vb.height+12)*sc);URL.revokeObjectURL(url);
-  c.toBlob(async b=>{const name=`floorplan-${L.key}.png`,file=new File([b],name,{type:'image/png'});
+  c.toBlob(async b=>{const name=`floorplan-${L.name.replace(/[^a-z0-9_-]/gi,'-')}.png`,file=new File([b],name,{type:'image/png'});
    if(navigator.canShare&&navigator.canShare({files:[file]})&&/iP(hone|ad)/.test(navigator.userAgent)){try{await navigator.share({files:[file]});return}catch(e){}}
    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()})};
  img.src=url};
